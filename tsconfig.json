@@ -3,10 +3,12 @@
     "target": "es2016",
     "module": "commonjs",
     "esModuleInterop": true,
+    "typeRoots": ["./src/global.d.ts", "./node_modules/@types"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir":"./dist"
+    "outDir":"./dist",
+    "strict": true
   },
-  "include": ["src", "index.ts"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

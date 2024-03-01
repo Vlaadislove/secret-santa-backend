@@ -23,7 +23,16 @@ const RandomizeSchema = new mongoose.Schema(
         partyLink: {
             type: String,
             required: true
-        }
+        },
+        // expiresAt: {
+        //     type: Date,
+        //     default: () => {
+        //         const date = new Date();
+        //         date.setMinutes(date.getMinutes() + 1);
+        //         date.setSeconds(0);
+        //         return date;
+        //     },
+        // },
     },
     { timestamps: true },
 )

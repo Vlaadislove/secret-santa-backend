@@ -11,7 +11,7 @@ export interface ICreate {
     email: string,
 }
 
-export const randomizeService = async (create, party: { name: string, email: string }[]) => {
+export const randomizeService = async (create:ICreate, party: { name: string, email: string }[]) => {
     try {
         function shuffledParty(party: { name: string, email: string }[]): IPair[] {
             const newArray = party.slice();
@@ -51,11 +51,11 @@ export const randomizeService = async (create, party: { name: string, email: str
     }
 }
 
-export const getPartyService = async (partyLink) => {
+export const getPartyService = async (partyLink:string) => {
     try {
         const party = await RandomizeSchema.findOne({ partyLink })
         if(!party) return {message: 'Некоректная ссылка для получения party'}
-        return party
+        return party.pairs
     } catch (error) {
         console.log(error)
     }

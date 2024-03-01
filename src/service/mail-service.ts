@@ -3,19 +3,19 @@ import dotenv from 'dotenv'
 import { ICreate, IPair } from "./randomize-service"
 dotenv.config()
 
+
+
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
+        port: Number(process.env.SMTP_PORT),
         secure: false,
         auth: {
             user: process.env.SMTP_USER,
-
             pass: process.env.SMTP_PASSWORD,
         }
     })
-
-export function sandEmailRandomize(create:ICreate, pairs: IPair[],link:string) {
-    transporter.sendMail({
+export async function sandEmailRandomize(create:ICreate, pairs: IPair[],link:string) {
+   await transporter.sendMail({
         from: process.env.SMTP_USER,
         to: `${create.email}`,
         subject: 'Результаты быстрой жеребьевки на Тайного Санту',
@@ -32,7 +32,7 @@ export function sandEmailRandomize(create:ICreate, pairs: IPair[],link:string) {
     })
 
     for (let i = 0; i < pairs.length; i++) {
-        transporter.sendMail({
+        await  transporter.sendMail({
             from: process.env.SMTP_USER,
             to: `${pairs[i].gifter.email}`,
             subject: 'Подопечный для Тайного Санты',

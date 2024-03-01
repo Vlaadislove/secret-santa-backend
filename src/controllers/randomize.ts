@@ -1,12 +1,12 @@
-import RandomizeModel from "../models/randomize-model"
+import {Request, Response} from 'express'
+
 import { getPartyService, randomizeService } from "../service/randomize-service"
 
 
 //Randomize
-export const randomize = async (req, res) => {
+export const randomize = async (req:Request, res:Response) => {
     try {
         const {create, party} = req.body
-        console.log(create, party)
         const status = await randomizeService(create, party)
         res.json(status)
     } catch (error) {
@@ -14,11 +14,11 @@ export const randomize = async (req, res) => {
     }
 }
 
-export const getParty = async (req, res) => {
+export const getParty = async (req:Request, res:Response) => {
     try {
         const link = req.params.id
         const party = await getPartyService(link)
-        res.json({party})
+        res.json(party)
     } catch (error) {
         res.json({message:'Ошибка при получении  party'})
     }
