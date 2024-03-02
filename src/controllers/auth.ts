@@ -1,10 +1,11 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import { registerService } from "../service/auth-service";
-import { IRequest } from "../middlewares/middlewares";
+// import { IRequest } from "../middlewares/middlewares";
 
-export const register = async (req: IRequest, res: Response) => {
+export const register = async (req: Request, res: Response) => {
     try {
         const session = registerService(req.body, req.client)
+
     } catch (error) {
 
     }

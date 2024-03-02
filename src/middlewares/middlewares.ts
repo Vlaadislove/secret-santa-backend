@@ -4,17 +4,17 @@ import { Request, Response, NextFunction } from 'express-serve-static-core'
 
 export interface IClientInfo {
     id: string | null ;
-    host: string | undefined;
-    agent: string | undefined;
+    host: string;
+    agent: string;
 }
 
-export interface IRequest extends Request {
-    client?: IClientInfo;
-};
+// export interface IRequest extends Request {
+//     client?: IClientInfo;
+// };
 
 
 export const clientInfo = (
-    req: IRequest,
+    req: Request,
     res: Response,
     next: NextFunction
 ) => {

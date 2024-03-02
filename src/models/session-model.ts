@@ -1,5 +1,36 @@
-import mongoose from 'mongoose'
+import mongoose, { Model, Document, Types } from "mongoose";
+import { IUserDocument } from "./user-model";
 
+export interface IUserAgent {
+  raw: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IIPAddress {
+  address: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface ISession {
+  user: Types.ObjectId | IUserDocument;
+  device: string;
+  agents: Types.Array<IUserAgentDocument>;
+  hosts: Types.Array<IIPAddressDocument>;
+  token: string;
+  revokedReason: string;
+  revokedAt: Date;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface IIPAddressDocument extends IIPAddress, Document {}
+
+export interface IUserAgentDocument extends IUserAgent, Document {}
+
+export interface ISessionDocument extends ISession, Document {}
+
+// export interface ISessionModel extends Model<ISessionDocument> {}
 
 const IPAddressSchema = new mongoose.Schema(
     {
@@ -55,10 +86,9 @@ export const SessionSchema = new mongoose.Schema(
       revokedAt: Date,
       revokedReason: {
         type: String,
-        required: true,
       },
     },
     { timestamps: true, collection: "auth_sessions" }
   );
 
-export default mongoose.model('Session', SessionSchema)
+export default mongoose.model<ISessionDocument>('Session', SessionSchema)
