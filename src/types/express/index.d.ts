@@ -17,6 +17,14 @@ declare global {
       //Cookie
       COOKIE_SECRET: string
       CLIENT_COOKIE: string
+
+      JWT_ACCESS_SECRET:string
+      JWT_REFRESH_SECRET:string
+      JWT_EXPIRATION_REFRESH:string
+      JWT_EXPIRATION_ACCESS:string
+      JWT_AUDIENCE:string
+      JWT_ISSUER:string
+      JWT_SUBJECT:string
     }
   }
 }

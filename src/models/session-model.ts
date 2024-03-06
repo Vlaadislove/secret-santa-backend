@@ -17,7 +17,7 @@ export interface ISession {
   device: string;
   agents: Types.Array<IUserAgentDocument>;
   hosts: Types.Array<IIPAddressDocument>;
-  token: string;
+  refreshToken: string;
   revokedReason: string;
   revokedAt: Date;
   expiresAt: Date;
@@ -71,7 +71,7 @@ export const SessionSchema = new mongoose.Schema(
         type: [IPAddressSchema],
         required: true,
       },
-      token: {
+      refreshToken: {
         type: String,
         required: true,
       },

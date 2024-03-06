@@ -6,7 +6,7 @@ import cors from 'cors'
 import  randomizeRoute  from './routes/randomize'
 import  authRoute  from './routes/auth'
 import { clientInfo } from './middlewares/middlewares'
-
+import * as settings from "./settings"
 
 dotenv.config()
 const app: Express = express()
@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 8000
 
 
 app.use(express.json())
-app.use(cookieParser())
+app.use(cookieParser(settings.COOKIE_SECRET))
 app.use(cors())
 
 app.use(clientInfo)
