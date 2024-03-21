@@ -1,12 +1,18 @@
-import jwt from 'jsonwebtoken'
+import { transformUser } from './../dto/dto';
+import jwt, { JwtPayload } from 'jsonwebtoken'
 // import { NextFunction, Request, Response } from "express";
 import * as settings from "../settings";
 import { Request, Response, NextFunction } from 'express-serve-static-core'
+import { IAuthenticatedUser } from '../service/auth-service';
 
 export interface IClientInfo {
-    id: string | null ;
+    id: string | null;
     host: string;
     agent: string;
+}
+
+export interface CustomJWT extends JwtPayload {
+    token: string | IAuthenticatedUser
 }
 
 // export interface IRequest extends Request {
@@ -23,38 +29,44 @@ export const clientInfo = (
         id: (req.query[settings.CLIENT_COOKIE] as string | null),
         host: req.headers.forwarded || req.socket.remoteAddress,
         agent: req.headers["user-agent"],
-}
-    
+    }
+
     next();
 };
 
 
-export const validateUser = (req:Request,res:Response, next: NextFunction) =>{
-
+export const validateUser = (req: Request, res: Response, next: NextFunction) => {
     try {
-        if(req.signedCookies['access_token']){
-            const userData = jwt.verify(req.signedCookies['access_token'], settings.AUTH.jwtKeyAccess)
-            if(userData){
-                console.log('User',userData)
+        const userData = jwt.verify(req.signedCookies['access_token'], settings.AUTH.jwtKeyAccess) as IAuthenticatedUser
+
+        if (userData) {
+            req.user = {
+                ...userData
+            }
+            next()
+        }
+
+    } catch (err) {
+        if (err instanceof Error) {
+            if (err.message == 'jwt expired') {
+                res.status(401).send({ error: { message: "Token expired." } });
+            } else {
+                res.status(401).send({ error: { message: "Invalid token." } });
             }
         }
-       
-
-    } catch (error) {
-        console.log('ОШИБОЧКА',error)
-        next()
     }
 }
 
-export const authErrors = (
-    err: Error,
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    if (err) {
-      if (err.message === "jwt expired")
-        res.status(401).send({ error: { message: "Token expired." } });
-      else res.status(401).send({ error: { message: "Invalid token." } });
-    } else next();
-  };
+
+// export const authErrors = (
+//     err: Error,
+//     req: Request,
+//     res: Response,
+//     next: NextFunction
+// ) => {
+//     if (err) {
+//         if (err.message === "jwt expired")
+//             res.status(401).send({ error: { message: "Token expired." } });
+//         else res.status(401).send({ error: { message: "Invalid token." } });
+//     } else next();
+// };

@@ -1,3 +1,4 @@
+import { IAuthenticatedUser } from "../../service/auth-service";
 import { IClientInfo } from "./middlewares/middlewares";
 
 export { };
@@ -17,7 +18,7 @@ declare global {
       //Cookie
       COOKIE_SECRET: string
       CLIENT_COOKIE: string
-
+      //Auth
       JWT_ACCESS_SECRET:string
       JWT_REFRESH_SECRET:string
       JWT_EXPIRATION_REFRESH:string
@@ -33,7 +34,7 @@ declare global {
   namespace Express {
     interface Request {
       client: IClientInfo;
-      // user: IAuthenticatedUser | undefined;
+      user: IAuthenticatedUser;
     }
   }
 }

@@ -30,8 +30,6 @@ export interface IUserAgentDocument extends IUserAgent, Document {}
 
 export interface ISessionDocument extends ISession, Document {}
 
-// export interface ISessionModel extends Model<ISessionDocument> {}
-
 const IPAddressSchema = new mongoose.Schema(
     {
       address: {
