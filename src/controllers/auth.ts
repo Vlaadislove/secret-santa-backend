@@ -5,7 +5,12 @@ import { truncate } from "fs";
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { session, clientId, ...result } = await registerService(req.body, req.client);
+    const data = await registerService(req.body, req.client);
+
+    if ('message' in data) {
+      return res.status(400).json({ error: data.message });
+    }
+    const { session, deviceId, ...result } = data
     res.cookie("refresh_token", session.refreshToken, {
       expires: session.expiresAt,
       httpOnly: true,
@@ -22,7 +27,7 @@ export const register = async (req: Request, res: Response) => {
       secure: false,
     });
 
-    return res.status(201).json({ clientId });
+    return res.status(201).json({ deviceId });
   } catch (error) {
     console.log(error)
   }
@@ -30,7 +35,8 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { session, clientId, ...result } = await loginService(req.body, req.client)
+    const { session, deviceId, ...result } = await loginService(req.body, req.client)
+    console.log(req.body, req.client)
     res.cookie("refresh_token", session.refreshToken, {
       expires: session.expiresAt,
       httpOnly: true,
@@ -47,7 +53,7 @@ export const login = async (req: Request, res: Response) => {
       secure: false,
     });
 
-    return res.status(201).json({ clientId });
+    return res.status(201).json({ deviceId });
   } catch (error) {
     console.log(error)
   }

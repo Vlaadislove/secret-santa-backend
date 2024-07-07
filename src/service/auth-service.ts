@@ -7,6 +7,7 @@ import { v1 as uuidv1 } from 'uuid'
 import { generateTokens, validateRefreshToken } from "./token-service";
 
 export interface IUserInput {
+    username: string;
     email: string;
     password: string;
 }
@@ -18,6 +19,25 @@ export interface IAuthenticatedUser {
         updatedAt: string;
     }
 }
+
+interface ExtendedError extends Error {
+    code?: number;
+}
+interface IUserCredentials {
+    deviceId: string;
+    accessToken: string;
+    session: {
+        refreshToken: string;
+        expiresAt: Date;
+    };
+}
+
+interface IErrorMessage {
+    message: string;
+}
+
+type RegisterServiceResponse = IUserCredentials | IErrorMessage;
+
 
 const getCredentials = (user: IUserDocument, client: IClientInfo) => {
     let device: string;
@@ -36,7 +56,7 @@ const getCredentials = (user: IUserDocument, client: IClientInfo) => {
     })
     session.save()
     return {
-        clientId: device,
+        deviceId: device,
         accessToken: tokens.accessToken,
         session: {
             refreshToken: session.refreshToken,
@@ -52,20 +72,26 @@ const authenticate = async (user: IUserDocument, password: string, client: IClie
 
 
 
-export const registerService = async (data: IUserInput, client: IClientInfo) => {
-    console.log('first')
+export const registerService = async (data: IUserInput, client: IClientInfo): Promise<RegisterServiceResponse> => {
     try {
-        const { email, password } = data
+
+        const { username, email, password } = data
         const user = new userModel({
+            username,
             email,
             password: await bcrypt.hash(password, 10)
         })
         await user.save()
 
         return getCredentials(user, client);
-    } catch (error) {
-        console.log(error)
-        throw new Error()
+    } catch (err) {
+        let mongoError = err as ExtendedError
+        if (mongoError.code === 11000) {
+            return { message: 'Пользователь с таким email уже существует.' }
+        } else {
+            throw new Error()
+        }
+
     }
 }
 

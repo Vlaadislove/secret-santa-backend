@@ -77,7 +77,7 @@ export const SessionSchema = new mongoose.Schema(
         type: Date,
         default: () => {
           const date = new Date();
-          date.setDate(date.getDate() + 30);
+          date.setSeconds(date.getSeconds() + 30);;
           return date;
         },
       },
