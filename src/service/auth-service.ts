@@ -5,6 +5,7 @@ import userModel, { IUserDocument } from "../models/user-model";
 import bcrypt from 'bcryptjs'
 import { v1 as uuidv1 } from 'uuid'
 import { generateTokens, validateRefreshToken } from "./token-service";
+import { IUserReturn, transformUser } from '../dto/dto';
 
 export interface IUserInput {
     username: string;
@@ -24,6 +25,7 @@ interface ExtendedError extends Error {
     code?: number;
 }
 interface IUserCredentials {
+    updateUser: IUserReturn
     deviceId: string;
     accessToken: string;
     session: {
@@ -33,7 +35,7 @@ interface IUserCredentials {
 }
 
 interface IErrorMessage {
-    message: string;
+    messageError: string;
 }
 
 type RegisterServiceResponse = IUserCredentials | IErrorMessage;
@@ -67,7 +69,9 @@ const getCredentials = (user: IUserDocument, client: IClientInfo) => {
 const authenticate = async (user: IUserDocument, password: string, client: IClientInfo) => {
     if (await bcrypt.compare(password, user.password)) {
         return getCredentials(user, client)
-    } else throw new Error()
+    } else {
+        return { messageError: 'Неверный email или пароль' }
+    }
 }
 
 
@@ -82,12 +86,19 @@ export const registerService = async (data: IUserInput, client: IClientInfo): Pr
             password: await bcrypt.hash(password, 10)
         })
         await user.save()
+        const credentials = getCredentials(user, client)
+        const updateUser = transformUser(user)
 
-        return getCredentials(user, client);
+        return {
+            updateUser,
+            deviceId: credentials.deviceId,
+            accessToken: credentials.accessToken,
+            session: credentials.session
+        };
     } catch (err) {
         let mongoError = err as ExtendedError
         if (mongoError.code === 11000) {
-            return { message: 'Пользователь с таким email уже существует.' }
+            return { messageError: 'Пользователь с таким email уже существует.' }
         } else {
             throw new Error()
         }
@@ -101,8 +112,21 @@ export const loginService = async (data: IUserInput, client: IClientInfo) => {
 
         const user = await userModel.findOne({ email })
         if (user) {
-            return await authenticate(user, password, client)
-        } else throw new Error()
+            const credentials = await authenticate(user, password, client)
+            const updateUser = transformUser(user)
+
+            if ('messageError' in credentials) {
+                return { messageError: 'Неверный email или пароль' }
+            }
+            return {
+                updateUser,
+                deviceId: credentials.deviceId,
+                accessToken: credentials.accessToken,
+                session: credentials.session
+            };
+        } else {
+            return { messageError: 'Неверный email или пароль' }
+        }
 
     } catch (error) {
         console.log(error)

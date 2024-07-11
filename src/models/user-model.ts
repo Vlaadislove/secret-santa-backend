@@ -1,6 +1,7 @@
-import mongoose, {Document} from 'mongoose'
+import mongoose, { Document } from 'mongoose'
 
 interface IUser {
+  username: string
   email: string;
   password: string;
   createdAt: Date;
@@ -8,28 +9,28 @@ interface IUser {
 }
 
 
-export interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document { }
 
 
 
 const UserSchema = new mongoose.Schema(
-    {
-      username: {
-        type: String,
-        required: true,
-      },
-      email: {
-        type: String,
-        required: true,
-        index: true,
-        unique: true,
-      },
-      password: {
-        type: String,
-        required: true,
-      },
+  {
+    username: {
+      type: String,
+      required: true,
     },
-    { timestamps: true, collection: "users" }
-  );
+    email: {
+      type: String,
+      required: true,
+      index: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true, collection: "users" }
+);
 
-  export default mongoose.model<IUserDocument>('User', UserSchema)
+export default mongoose.model<IUserDocument>('User', UserSchema)

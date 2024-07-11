@@ -7,10 +7,11 @@ export const register = async (req: Request, res: Response) => {
   try {
     const data = await registerService(req.body, req.client);
 
-    if ('message' in data) {
-      return res.status(400).json({ error: data.message });
+    if ('messageError' in data) {
+      return res.status(409).json({ errorMessage: data.messageError });
     }
-    const { session, deviceId, ...result } = data
+
+    const { session, deviceId, updateUser: { username, id, email }, ...result } = data
     res.cookie("refresh_token", session.refreshToken, {
       expires: session.expiresAt,
       httpOnly: true,
@@ -27,7 +28,12 @@ export const register = async (req: Request, res: Response) => {
       secure: false,
     });
 
-    return res.status(201).json({ deviceId });
+    return res.status(201).json({
+      deviceId,
+      username,
+      id,
+      email
+    });
   } catch (error) {
     console.log(error)
   }
@@ -35,8 +41,12 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { session, deviceId, ...result } = await loginService(req.body, req.client)
-    console.log(req.body, req.client)
+    const data = await loginService(req.body, req.client)
+
+    if ('messageError' in data) {
+      return res.status(409).json({ errorMessage: data.messageError });
+    }
+    const { session, deviceId, updateUser: { username, email, id }, ...result } = data
     res.cookie("refresh_token", session.refreshToken, {
       expires: session.expiresAt,
       httpOnly: true,
@@ -53,7 +63,12 @@ export const login = async (req: Request, res: Response) => {
       secure: false,
     });
 
-    return res.status(201).json({ deviceId });
+    return res.status(201).json({
+      deviceId,
+      username,
+      id,
+      email
+    });
   } catch (error) {
     console.log(error)
   }
