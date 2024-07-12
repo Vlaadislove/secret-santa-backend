@@ -1,6 +1,6 @@
 import { validateUser } from './../middlewares/middlewares';
 import { Router } from "express";
-import { login, logout, refresh, register } from "../controllers/auth";
+import { login, logout, me, refresh, register } from "../controllers/auth";
 
 
 
@@ -13,7 +13,8 @@ router.post('/register', register)
 router.post('/login', login)
 router.post('/refresh', refresh)
 router.post('/logout', validateUser, logout)
-// router.post('/logout', logout)
+router.get('/me', validateUser, me)
+
 
 
 export default router

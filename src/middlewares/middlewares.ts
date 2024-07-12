@@ -26,7 +26,7 @@ export const clientInfo = (
     next: NextFunction
 ) => {
     req.client = {
-        id: (req.query[settings.CLIENT_COOKIE] as string | null),
+        id: (req.query['deviceId'] as string | null),
         host: req.headers.forwarded || req.socket.remoteAddress,
         agent: req.headers["user-agent"],
     }

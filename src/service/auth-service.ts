@@ -35,10 +35,12 @@ interface IUserCredentials {
 }
 
 interface IErrorMessage {
-    messageError: string;
+    error: {
+        message: string
+    }
 }
 
-type RegisterServiceResponse = IUserCredentials | IErrorMessage;
+type AuthServiceResponse = IUserCredentials | IErrorMessage;
 
 
 const getCredentials = (user: IUserDocument, client: IClientInfo) => {
@@ -70,13 +72,13 @@ const authenticate = async (user: IUserDocument, password: string, client: IClie
     if (await bcrypt.compare(password, user.password)) {
         return getCredentials(user, client)
     } else {
-        return { messageError: 'Неверный email или пароль' }
+        return { error: { message: 'Неверный email или пароль' } }
     }
 }
 
 
 
-export const registerService = async (data: IUserInput, client: IClientInfo): Promise<RegisterServiceResponse> => {
+export const registerService = async (data: IUserInput, client: IClientInfo): Promise<AuthServiceResponse> => {
     try {
 
         const { username, email, password } = data
@@ -98,7 +100,7 @@ export const registerService = async (data: IUserInput, client: IClientInfo): Pr
     } catch (err) {
         let mongoError = err as ExtendedError
         if (mongoError.code === 11000) {
-            return { messageError: 'Пользователь с таким email уже существует.' }
+            return { error: { message: 'Пользователь с таким email уже существует.' } }
         } else {
             throw new Error()
         }
@@ -106,7 +108,7 @@ export const registerService = async (data: IUserInput, client: IClientInfo): Pr
     }
 }
 
-export const loginService = async (data: IUserInput, client: IClientInfo) => {
+export const loginService = async (data: IUserInput, client: IClientInfo): Promise<AuthServiceResponse> => {
     try {
         const { email, password } = data
 
@@ -115,8 +117,8 @@ export const loginService = async (data: IUserInput, client: IClientInfo) => {
             const credentials = await authenticate(user, password, client)
             const updateUser = transformUser(user)
 
-            if ('messageError' in credentials) {
-                return { messageError: 'Неверный email или пароль' }
+            if ('error' in credentials) {
+                return { error: { message: 'Неверный email или пароль' } }
             }
             return {
                 updateUser,
@@ -125,7 +127,7 @@ export const loginService = async (data: IUserInput, client: IClientInfo) => {
                 session: credentials.session
             };
         } else {
-            return { messageError: 'Неверный email или пароль' }
+            return { error: { message: 'Неверный email или пароль' } }
         }
 
     } catch (error) {
@@ -140,7 +142,7 @@ export const refreshService = async (token: string, client: IClientInfo) => {
         let tokens;
         if (user) {
             const userId = await userModel.findById(user.account.id)
-            console.log('User from refresh', userId)
+            // console.log('User from refresh', userId)
 
             if (userId == null) return { error: { message: 'User not found' } }
             else tokens = generateTokens(userId)
@@ -199,10 +201,32 @@ export const logoutService = async (user: string, client: IClientInfo) => {
             s.revokedReason = "logout";
             s.save()
         })
+        console.log(session)
         return "Successfully logged out."
     } catch (error) {
         console.log(error)
         throw new Error()
     }
+}
 
+export const meService = async (userId: string, client: IClientInfo): Promise<AuthServiceResponse> => {
+    try {
+        const user = await userModel.findById(userId)
+        if (user) {
+            const credentials = getCredentials(user, client)
+            const updateUser = transformUser(user)
+            return {
+                updateUser,
+                deviceId: credentials.deviceId,
+                accessToken: credentials.accessToken,
+                session: credentials.session
+            }
+        } else {
+            return { error: { message: 'User not found' } }
+        }
+
+    } catch (error) {
+        console.log(error)
+        throw new Error()
+    }
 }
