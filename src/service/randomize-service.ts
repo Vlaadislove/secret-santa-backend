@@ -31,7 +31,6 @@ export const randomizeService = async (create:ICreate, party: { name: string, em
                     recipient: newArray[i]
                 })
             }
-
             return draw
         }
         const pairs = shuffledParty(party)

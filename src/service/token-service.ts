@@ -13,7 +13,7 @@ export const generateTokens = (user: IUserDocument) => {
         settings.AUTH.jwtKeyAccess,
         {
             expiresIn: settings.AUTH.jwtExpirationAccess,
-            // expiresIn: '30s',
+            // expiresIn: '15s',
             audience: settings.AUTH.jwtAudience,
             issuer: settings.AUTH.jwtIssuer,
             subject: settings.AUTH.jwtSubject,
@@ -26,6 +26,7 @@ export const generateTokens = (user: IUserDocument) => {
         settings.AUTH.jwtKeyRefresh,
         {
             expiresIn: settings.AUTH.jwtExpirationRefresh,
+            // expiresIn: '30s',
             audience: settings.AUTH.jwtAudience,
             issuer: settings.AUTH.jwtIssuer,
             subject: settings.AUTH.jwtSubject,

@@ -43,13 +43,37 @@ interface IErrorMessage {
 type AuthServiceResponse = IUserCredentials | IErrorMessage;
 
 
-const getCredentials = (user: IUserDocument, client: IClientInfo) => {
+const getCredentials = async (user: IUserDocument, client: IClientInfo) => {
     let device: string;
 
     if (client.id) device = client.id
     else device = uuidv1() + `-${new Date().getTime()}`
 
     const tokens = generateTokens(user)
+
+    const findSession = await sessionModel.findOne({
+        device: client.id,
+        user: user.id,
+        revokedAt: { $exists: false }
+    })
+
+    if (findSession) {
+        const newExp = new Date();
+        newExp.setDate(newExp.getDate() + 30);
+
+        findSession.refreshToken = tokens.refreshToken,
+        findSession.expiresAt = newExp
+        await findSession.save()
+
+        return {
+            deviceId: device,
+            accessToken: tokens.accessToken,
+            session: {
+                refreshToken: tokens.refreshToken,
+                expiresAt: findSession.expiresAt,
+            }
+        }
+    }
 
     const session = new sessionModel({
         user: user._id,
@@ -70,7 +94,7 @@ const getCredentials = (user: IUserDocument, client: IClientInfo) => {
 }
 const authenticate = async (user: IUserDocument, password: string, client: IClientInfo) => {
     if (await bcrypt.compare(password, user.password)) {
-        return getCredentials(user, client)
+        return await getCredentials(user, client)
     } else {
         return { error: { message: 'Неверный email или пароль' } }
     }
@@ -88,7 +112,7 @@ export const registerService = async (data: IUserInput, client: IClientInfo): Pr
             password: await bcrypt.hash(password, 10)
         })
         await user.save()
-        const credentials = getCredentials(user, client)
+        const credentials = await getCredentials(user, client)
         const updateUser = transformUser(user)
 
         return {
@@ -142,8 +166,6 @@ export const refreshService = async (token: string, client: IClientInfo) => {
         let tokens;
         if (user) {
             const userId = await userModel.findById(user.account.id)
-            // console.log('User from refresh', userId)
-
             if (userId == null) return { error: { message: 'User not found' } }
             else tokens = generateTokens(userId)
         }
@@ -176,7 +198,7 @@ export const refreshService = async (token: string, client: IClientInfo) => {
             clientId: session.device,
             accessToken: tokens.accessToken,
             session: {
-                refreshToken: session.refreshToken,
+                refreshToken: tokens.refreshToken,
                 expiresAt: session.expiresAt,
             }
         }
@@ -201,7 +223,6 @@ export const logoutService = async (user: string, client: IClientInfo) => {
             s.revokedReason = "logout";
             s.save()
         })
-        console.log(session)
         return "Successfully logged out."
     } catch (error) {
         console.log(error)
@@ -213,7 +234,7 @@ export const meService = async (userId: string, client: IClientInfo): Promise<Au
     try {
         const user = await userModel.findById(userId)
         if (user) {
-            const credentials = getCredentials(user, client)
+            const credentials = await getCredentials(user, client)
             const updateUser = transformUser(user)
             return {
                 updateUser,

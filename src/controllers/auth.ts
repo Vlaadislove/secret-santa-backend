@@ -78,6 +78,7 @@ export const login = async (req: Request, res: Response) => {
 
 
 export const refresh = async (req: Request, res: Response) => {
+
   try {
     const { session, clientId, error, ...result } = await refreshService(req.signedCookies['refresh_token'], req.client)
 
@@ -105,17 +106,29 @@ export const refresh = async (req: Request, res: Response) => {
   }
 
 }
-// export const logout = async (req:Request, res:Response) => {
-//     const foo = await logoutService(req.user.account.id, req.client)
-// }
+
 export const logout = async (req: Request, res: Response) => {
   try {
     const message = await logoutService(req.user.account.id, req.client)
+    res.cookie("refresh_token", '', {
+      expires: new Date(Date.now() + 5000),
+      httpOnly: true,
+      path: "/",
+      signed: true,
+      secure: false,
+    });
+
+    res.cookie("access_token", '', {
+      expires: new Date(Date.now() + 5000),
+      httpOnly: true,
+      path: "/",
+      signed: true,
+      secure: false,
+    });
     return res.status(200).json({ message });
   } catch (error) {
     console.log(error)
   }
-
 }
 
 
