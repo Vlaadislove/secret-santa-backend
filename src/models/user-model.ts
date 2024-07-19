@@ -1,9 +1,10 @@
-import mongoose, { Document } from 'mongoose'
+import mongoose, { Document, ObjectId, Schema } from 'mongoose'
 
 interface IUser {
   username: string
   email: string;
   password: string;
+  boxes: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    boxes: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Box'
+    }],
   },
   { timestamps: true, collection: "users" }
 );

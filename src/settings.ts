@@ -9,7 +9,7 @@ dotenv.config()
 export const COOKIE_SECRET = process.env.COOKIE_SECRET;
 
 // export const CLIENT_COOKIE = process.env.CLIENT_COOKIE;
-
+export const MONGO_DB_URL = process.env.DB_URL || " "
 
 export const AUTH = {
     jwtExpirationAccess:process.env.JWT_EXPIRATION_ACCESS,

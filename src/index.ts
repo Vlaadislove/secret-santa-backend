@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import randomizeRoute from './routes/randomize'
 import authRoute from './routes/auth'
+import boxRoute from './routes/box'
 import { clientInfo } from './middlewares/middlewares'
 import * as settings from "./settings"
 import rateLimit from 'express-rate-limit'
@@ -30,18 +31,15 @@ app.use(cors({
 
 // app.use(limiter);
 app.use(clientInfo)
-
-
-
+app.use(express.static('src/uploads'))
 app.use('/api/randomize', randomizeRoute)
 app.use('/api/auth', authRoute)
-
-const mongoDBUrl = process.env.DB_URL!
+app.use('/api/box', boxRoute)
 
 
 async function start() {
     try {
-        await mongoose.connect(mongoDBUrl).then(() => console.log('Mongoose подключен к базе данных.'))
+        await mongoose.connect(settings.MONGO_DB_URL).then(() => console.log('Mongoose подключен к базе данных.'))
         app.listen(PORT, () => { console.log(`Server started on port: ${PORT}`) })
 
     } catch (error) {
